@@ -1,31 +1,26 @@
-### SCRIPT TALLER 1 ###
-
-#INTEGRANTES GRUPO 1:
-# JIMENA CARDENAS
-# BETINA CORTÉS
-# NELSON LÓPEZ
-# YILMER PALACIOS
-
-#CARGA DE DATOS DESDE LA WEB - WEBSCRAPPING
-
-rm(list = ls())
-
-require(pacman)  ## llamar la librería pacman: contiene la función p_load()
-p_load(tidyverse, rvest) ## p_load llama/instala-llama las librerías que se enlistan:
-# Tidyverse contiene las librerías ggplot, dplyr... /// para hacer web-scraping de páginas estáticas
+################################################################
+# Problem Set 1: Script
+# Authors: Yilmer Palacios, Betina Cortés, Lida Jimena Cárdenas,
+# Nelson Fabián López
+################################################################
 
 
-my_url = "https://ignaciomsarmiento.github.io/GEIH2018_sample/page1.html"
-browseURL(my_url) ## Ir a la página
+# Loading Libraries (Webscrapping) -------------------------------------------------------
 
-my_html = read_html(my_url) ## leer el html de la página
-class(my_html) ## ver la clase del objeto
+rm(list = ls()) 
 
-###__________
+#install.packages("pacman")
+require("pacman")
+p_load("tidyverse","rvest","rio","skimr","caret")
 
-## extraer todas las tablas del html 
-my_table = my_html %>% html_table()
+# Importing Dataset -------------------------------------------------------
 
-## numero de tablas extraidas
-length(my_table)
+df_list <- list()
+for (i in 1:10) {
+  html_i <- read_html(paste0("https://ignaciomsarmiento.github.io/GEIH2018_sample/pages/geih_page_", i, ".html")) %>%
+    html_table()
+  df_i <- as.data.frame(html_i)
+  df_list[[i]] <- df_i
+}
 
+GEIH <- do.call(rbind, df_list)
