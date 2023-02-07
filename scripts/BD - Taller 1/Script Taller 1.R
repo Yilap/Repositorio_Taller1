@@ -24,3 +24,12 @@ for (i in 1:10) {
 }
 
 GEIH <- do.call(rbind, df_list)
+
+# Leer los datos y guardarlos como un archivo binario R (rds) usando saveRDS()
+# para hacer más eficiente la carga de los datos cuando sea necesario
+
+#saveRDS(GEIH, file = "GEIH.rds")
+#GEIH<-readRDS("GEIH.Rds")
+
+# Cleaning data -----------------------------------------------------------
+
