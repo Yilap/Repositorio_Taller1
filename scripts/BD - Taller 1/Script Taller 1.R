@@ -38,7 +38,15 @@ GEIH <-GEIH[,-1] # Eliminamos la primera columna
 
 # Cleaning data -----------------------------------------------------------
 
-# Renombramos las variables de interés
+# Se renombran las variables de interés para mayor claridad
+GEIH <- rename(GEIH, educ = p6210)
+GEIH <- rename(GEIH, exp = p6426)
+
+sum(exp)
+
+# Se eliminan las observaciones de las personas mayores de 18 años
+GEIH <-GEIH[GEIH$age>=18,] 
+
 
  
 
