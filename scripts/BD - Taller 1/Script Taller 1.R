@@ -10,11 +10,11 @@
 rm(list = ls()) 
 
 #install.packages("pacman")
-install.packages("MASA")
+#install.packages("MASA")
 
 
 require("pacman")
-p_load("tidyverse","rvest","rio","skimr","caret","ggplot2","stargazer","boot", "sandwich", "ggplo2")
+p_load("tidyverse","rvest","rio","skimr","caret","ggplot2","stargazer","boot", "sandwich", "ggplot2","MASA")
 
 # Importing Dataset (Webscrapping)-------------------------------------------------------
 
