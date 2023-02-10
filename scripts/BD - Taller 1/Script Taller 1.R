@@ -82,19 +82,36 @@ GEIH$horast <- GEIH$hoursWorkUsual + GEIH$hoursWorkActualSecondJob
 # Se eliminan las personas que tengan un ingreso total de 0 
 GEIH<- GEIH[GEIH$ingtot>0,]
 
-#Salario por hora
-GEIH$inghora <- GEIH$ingtot/(GEIH$horast*4)
+#Salario por hora (Ingresos mensuales, por 12 meses, dividido en las horas semanales trabajadas por 52 semanas del año)
+GEIH$inghora <- (GEIH$ingtot*12)/(GEIH$horast*52)
 
 # Se hace un subset de las variables de interés 
 GEIHf <-subset(GEIH, select = c("inghora","age","sex","educ","experp","horast","estrato1","relab")) 
 GEIHf <- na.omit(GEIHf)
 
-#Stargazer no lee variables categóricas, por eso las volví a poner numéricas
+#Stargazer no lee variables categóricas, por eso las volví a poner numéricas, Y: perfecto! :)
 GEIHf$sex <- as.numeric(GEIHf$sex)
 GEIHf$educ <- as.numeric(GEIHf$educ)
 GEIHf$relab <- as.numeric(GEIHf$relab)
 
 stargazer(GEIHf, summary = TRUE, type = "text")
+
+#Identificamos y eliminamos outliers, estos serán los que estén 3 sd alejados de la media, creamos nuevo df
+
+GEIHSO <- GEIHf
+
+GEIHSO <- GEIHSO %>%
+  filter(inghora < mean(inghora) + 3 * sd(inghora) &
+           inghora > mean(inghora) - 3 * sd(inghora))
+
+GEIHSO <- GEIHSO %>%
+  filter(age < mean(age) + 3 * sd(age) &
+           age > mean(age) - 3 * sd(age))
+
+GEIHSO <- GEIHSO %>%
+  filter(experp < mean(experp) + 3 * sd(experp) &
+           experp > mean(experp) - 3 * sd(experp))
+
 
 #Pensar bien para presentar estadísticas descriptivas y revisar construcciòn de variables
 
