@@ -33,8 +33,8 @@ GEIH <-GEIH[,-1] # Eliminamos la primera columna
 # Leer los datos y guardarlos como un archivo binario R (rds) usando saveRDS()
 # para hacer más eficiente la carga de los datos cuando sea necesario
 
-#saveRDS(GEIH, file = "GEIH.rds")
-GEIH<-readRDS("GEIH.Rds")
+saveRDS(GEIH, file = "GEIH1.rds")
+GEIH<-readRDS("GEIH1.Rds")
 
 # Cleaning data -----------------------------------------------------------
 
@@ -54,7 +54,7 @@ GEIH$relab <- factor(GEIH$relab)
 class(GEIH$relab)
 
 
-#Cálculo de la experiencia potencial
+# Cálculo de la experiencia potencial
 # En primer lugar, se estiman los años de educación dependiendo del máximo nivel 
 # alcanzado
 GEIH$añoseduc <- ifelse(GEIH$educ == 3, 5, 
@@ -145,8 +145,8 @@ boxplot(GEIHSO$estrato1, horizontal = TRUE, main = "Estrato Socio-Económico", o
 par(mfrow = c(1, 1))
 
 
-# PUNTO 3 - Age-wage profile --------------------------------------------------------
-
+# P3: Age - wage profile ------------------------------------------------------
+# En esta sección del script se desarrolla el tercer (3) punto del taller
 
 #Edad al cuadrado
 GEIHSO$age2 <- I(GEIHSO$age^2)
@@ -157,11 +157,9 @@ view(reg1)
 #Regresión lineal 
 reg_lin <- lm(lningresoh ~ age + age2, data = GEIHSO)
 
-
 # Ver el resultado de la regresión lineal
 summary(reg_lin)
 stargazer(reg_lin,type="text")
-
 
 # Relación entre los residuos de la regresión lineal y la variable dependiente 
 ggplot(reg1) + 
@@ -243,10 +241,12 @@ saveRDS(GEIHSO, file = "GEIH.rds")
 rm(list = ls()) 
 GEIHSO<-readRDS("GEIH.Rds")
 
-# PUNTO 4 - GÉNERO --------------------------------------------------------
 
-# 4.a Wage & Gender Relationship------------
+# P4.The gender earnings GAP -------------------------------------------------
 
+# 4.a Wage & Gender Relationship
+
+# Se seleccionan las variables a usar
 reg2 <- subset (GEIHSO, select = c("lningresoh","sex"))
 
 #Regresión lineal 
@@ -266,11 +266,12 @@ confint_lower <- coef(reg) - qt(0.975, df.residual(reg)) * se_coef
 confint_upper <- coef(reg) + qt(0.975, df.residual(reg)) * se_coef
 cbind(coef = coef(reg), se_coef, t_value, p_value, confint_lower, confint_upper)
 
-#la descarté porque es dicótoma y no dice mucho, igual ahí dejo el código
+# Se descarta la regresión con errores robustos, pues la veriable es dicótoma y no aporta mucho al ejercicio 
+
 ggplot(reg2, aes(x = sex, y = lningresoh)) + 
   geom_point() + 
   ggtitle("Scatter Plot") +
-  labs(x = "SeX", y = "Wage")
+  labs(x = "Sex", y = "Wage")
 
 # 4.b Equal Pay for Equal Work? ----------------------
 
@@ -356,7 +357,7 @@ ICsupmale <- 49.12867 + 1.96*(1.121325)
 ICinfmale
 ICsupmale
 
-#ahora para la mujer
+# Ahora para la mujer
 
 set.seed(12345)
 regFWLBoot <- subset (GEIHSO, select = c("lningresoh","sex", "age2", "age"))
