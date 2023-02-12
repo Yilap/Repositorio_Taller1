@@ -413,4 +413,5 @@ ICsupmale <- 42.03397 + 1.96*(0.9934249)
 ICinfmale
 ICsupmale
 
-# P5: Predicting earnings ------------------------------------------------
+# P5: Predicting earnings -------------------------------------------------
+
