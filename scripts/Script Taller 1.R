@@ -10,16 +10,13 @@
 rm(list = ls()) 
 
 #install.packages("pacman")
-#install.packages("MASA")
-
-
 require("pacman")
-p_load("tidyverse","rvest","rio","skimr","caret","ggplot2","stargazer","boot", "sandwich", "ggplot2", "boot")
+p_load("tidyverse","rvest","rio","skimr","caret","ggplot2","stargazer","boot", "sandwich", "ggplot2","MASA", "boot")
 
 # Importing Dataset (Webscrapping)-------------------------------------------------------
 
-# Creamos tabla a partir de la base de datos en la wrb de GEIH, para esto hacemos un ciclo for
-#para leer todos los data chunks de la página web
+# Importamos la base datos haciendo webscrapping, para esto hacemos un loop
+# para leer todos los data chunks de la página web
 
 df_list <- list()
 
@@ -30,14 +27,14 @@ for (i in 1:10) {
   df_list[[i]] <- df_i
 }
 
-GEIH <- do.call(rbind, df_list) ## compilamos todas las lecturas en una sola data.
+GEIH <- do.call(rbind, df_list) ## Compilamos todas las lecturas en un solo data frame.
 GEIH <-GEIH[,-1] # Eliminamos la primera columna
 
 # Leer los datos y guardarlos como un archivo binario R (rds) usando saveRDS()
 # para hacer más eficiente la carga de los datos cuando sea necesario
 
-#saveRDS(GEIH, file = "GEIH.rds")
-GEIH<-readRDS("GEIH.Rds")
+saveRDS(GEIH, file = "GEIH1.rds")
+GEIH<-readRDS("GEIH1.Rds")
 
 # Cleaning data -----------------------------------------------------------
 
@@ -49,7 +46,7 @@ GEIH <- GEIH[GEIH$ocu == 1, ]
 # Se renombran la variable de máx. nivel de eduación para mayor claridad
 GEIH <- rename(GEIH, educ = p6210)
 
-# La variable de educación y ocupación se establece como una categórica
+# La variable de educación y tipo de ocupación se establecen como categóricas
 GEIH$educ <- factor(GEIH$educ)
 class(GEIH$educ)
 
@@ -57,14 +54,14 @@ GEIH$relab <- factor(GEIH$relab)
 class(GEIH$relab)
 
 
-#Cálculo de la experiencia potencial
+# Cálculo de la experiencia potencial
 # En primer lugar, se estiman los años de educación dependiendo del máximo nivel 
 # alcanzado
 GEIH$añoseduc <- ifelse(GEIH$educ == 3, 5, 
-                      ifelse(GEIH$educ == 4, 9, 
-                             ifelse(GEIH$educ == 5, 11, 
-                                    ifelse(GEIH$educ == 6, 16, 
-                                           ifelse(GEIH$educ == 9, 0, 0)))))
+                        ifelse(GEIH$educ == 4, 9, 
+                               ifelse(GEIH$educ == 5, 11, 
+                                      ifelse(GEIH$educ == 6, 16, 
+                                             ifelse(GEIH$educ == 9, 0, 0)))))
 
 
 # Se aplica la fórmula de experiencia potencial, Los valores negativos se aproximan a 0 experiencia y
@@ -148,8 +145,8 @@ boxplot(GEIHSO$estrato1, horizontal = TRUE, main = "Estrato Socio-Económico", o
 par(mfrow = c(1, 1))
 
 
-# PUNTO 3 - Age-wage profile --------------------------------------------------------
-
+# P3: Age - wage profile ------------------------------------------------------
+# En esta sección del script se desarrolla el tercer (3) punto del taller
 
 #Edad al cuadrado
 GEIHSO$age2 <- I(GEIHSO$age^2)
@@ -160,11 +157,9 @@ view(reg1)
 #Regresión lineal 
 reg_lin <- lm(lningresoh ~ age + age2, data = GEIHSO)
 
-
 # Ver el resultado de la regresión lineal
 summary(reg_lin)
 stargazer(reg_lin,type="text")
-
 
 # Relación entre los residuos de la regresión lineal y la variable dependiente 
 ggplot(reg1) + 
@@ -198,7 +193,7 @@ b1<-betas[2]
 b2<-betas[3]
 
 #Set seed para asegurar replicabilidad
-set.seed(1111)
+set.seed(111)
 R<-1000
 est_reg1<- rep(0,R)
 
@@ -218,7 +213,9 @@ est_reg1[i]<- b1/(-2*b2)
 
 #Histograma
 hist(est_reg1, main = "Edad en la que se max. ln ingreso por hora", xlab = "Edad", col = "gray")
-abline(v = mean(est_reg1), col = "red", lwd = 2)
+abline(v = mean(est_reg1), col = "blue", lwd = 2)
+xlim(44,50)
+axis(side = 1, at = seq(44,50, by = 1))
 
 summary(est_reg1)
 
@@ -230,6 +227,27 @@ est_boot <- function(reg1, index,
 
 bootstatistics <- boot(reg1, statistic = est_boot, R = 1000)
 bootstatistics
+
+# Para b0
+ICinfb0<- 7.8060988293 - 1.96*(6.072904e-02)
+ICsupb0 <- 7.8060988293 + 1.96*(6.072904e-02)
+
+ICinfb0
+ICsupb0
+
+# Para b1
+ICinfb1<- 0.0427107403 - 1.96*(3.216626e-03)
+ICsupb1 <- 0.0427107403 + 1.96*(3.216626e-03)
+
+ICinfb1
+ICsupb1
+
+# Para b2
+ICinfb2<- -0.0004603549 - 1.96*(3.921086e-05)
+ICsupb2 <- -0.0004603549 + 1.96*(3.921086e-05)
+
+ICinfb2
+ICsupb2
 
 #Cálculo de la edad pico
 edadpico <- b1/(-2*b2)
@@ -244,10 +262,12 @@ saveRDS(GEIHSO, file = "GEIH.rds")
 rm(list = ls()) 
 GEIHSO<-readRDS("GEIH.Rds")
 
-# PUNTO 4 - GÉNERO --------------------------------------------------------
 
-# 4.a Wage & Gender Relationship------------
+# P4.The gender earnings GAP -------------------------------------------------
 
+# 4.a Wage & Gender Relationship
+
+# Se seleccionan las variables a usar
 reg2 <- subset (GEIHSO, select = c("lningresoh","sex"))
 
 #Regresión lineal 
@@ -256,7 +276,6 @@ reg_lin <- lm(lningresoh ~ sex, data = GEIHSO)
 # Ver el resultado de la regresión lineal
 summary(reg_lin)
 stargazer(reg_lin,type="text")
-
 
 # Regresión con errores robustos
 reg <- lm(lningresoh ~ sex, data = GEIHSO)
@@ -268,13 +287,12 @@ confint_lower <- coef(reg) - qt(0.975, df.residual(reg)) * se_coef
 confint_upper <- coef(reg) + qt(0.975, df.residual(reg)) * se_coef
 cbind(coef = coef(reg), se_coef, t_value, p_value, confint_lower, confint_upper)
 
+# Se descarta la regresión con errores robustos, pues la veriable es dicótoma y no aporta mucho al ejercicio 
 
-reg2$sex <- factor(reg2$sex)
-#la descarté porque es dicótoma y no dice mucho, igual ahí dejo el código
 ggplot(reg2, aes(x = sex, y = lningresoh)) + 
   geom_point() + 
   ggtitle("Scatter Plot") +
-  labs(x = "SeX", y = "Wage")
+  labs(x = "Sex", y = "Wage")
 
 # 4.b Equal Pay for Equal Work? ----------------------
 
@@ -300,7 +318,6 @@ reg2control<-reg2control %>% mutate(lnwageResidF=lm(lningresoh ~ age2 + age + ed
 regFWL2<-lm(lnwageResidF~SexResidF,reg2control)
 stargazer(regFWL,regFWLSex,regFWL2,type="text",digits=7) # with stargazer we can visualize the coefficients next to each other
 
-
 sum(resid(regFWL)^2)
 sum(resid(regFWLSex)^2)
 sum(resid(regFWL2)^2)
@@ -314,9 +331,8 @@ set.seed(12345)
 
 regFWLBoot <- subset (GEIHSO, select = c("lningresoh","sex", "age2", "age","educ","experp","relab","estrato1"))
 
-
 FWLFun <-function(data,index){
-
+  
   regFWLBoot <- subset (GEIHSO, select = c("lningresoh","sex", "age2", "age","educ","experp","relab","estrato1"))
   data<-data %>% mutate(SexResidF=lm(sex~ age + age2 + educ + experp + relab + estrato1 ,data)$residuals) #Residuals of sex~controls 
   data<-data %>% mutate(lnwageResidF=lm(lningresoh ~ age2 + age + educ + experp + relab + estrato1 ,data)$residuals) #Residuals of lnwage~controls 
@@ -325,7 +341,6 @@ FWLFun <-function(data,index){
 }
 
 FWLFun (regFWLBoot,1:nrow(regFWLBoot)) # probamos la función
-
 databoot <- boot(regFWLBoot, FWLFun, R = 1000) # ejecutamos el Bootstrap
 databoot
 
@@ -333,6 +348,8 @@ databoot
 
 set.seed(12345)
 regFWLBoot <- subset (GEIHSO, select = c("lningresoh","sex", "age2", "age"))
+
+# Para el caso de los hombres:
 regFWLBootMale <- regFWLBoot[regFWLBoot$sex == 1, ]
 regprueba <- lm(lningresoh ~ age + age2, data = regFWLBootMale)
 stargazer(regprueba,type="text")
@@ -342,15 +359,10 @@ coefregmale <- lm(lningresoh ~ age + age2, data = regFWLBootMale)$coefficients
 graficamale <- coefregmale[1]+coefregmale[2]*regFWLBootMale$age+coefregmale[3]*regFWLBootMale$age2
 plot(regFWLBootMale$age, graficamale)
 
-#Gráfico del perfil edad-ingresos para hombres
-ggplot(regFWLBootMale) + 
-  geom_point(aes(x = regFWLBootMale$age, y = graficamale)) +
-  ggtitle("Perfil edad-ingresos para hombres") +
-  labs(x = "Edad", y = "Pred. log. de ingreso por hora")
 
 
 Malemax <-function(data,index){
-    coefs <- (lm(lningresoh ~ age + age2, data = data, subset = index))$coefficients  # reg lnwage residual on sex residuals
+  coefs <- (lm(lningresoh ~ age + age2, data = data, subset = index))$coefficients  # reg lnwage residual on sex residuals
   b1<-coefs[2]
   b2<-coefs[3] 
   Agemax <- (-b1)/(2*b2)
@@ -362,14 +374,13 @@ Malemax (regFWLBootMale,1:nrow(regFWLBootMale)) # probamos la función
 databootmale <- boot(regFWLBootMale, Malemax, R = 1000) # ejecutamos el Bootstrap
 databootmale
 
-
 ICinfmale <- 49.12867 - 1.96*(1.121325)
 ICsupmale <- 49.12867 + 1.96*(1.121325)
 
 ICinfmale
 ICsupmale
 
-#ahora para la mujer
+# Ahora para la mujer
 
 set.seed(12345)
 regFWLBoot <- subset (GEIHSO, select = c("lningresoh","sex", "age2", "age"))
@@ -381,11 +392,6 @@ coefregfemale <- lm(lningresoh ~ age + age2, data = regFWLBootFemale)$coefficien
 graficafemale <- coefregfemale[1]+coefregfemale[2]*regFWLBootFemale$age+coefregfemale[3]*regFWLBootFemale$age2
 plot(regFWLBootFemale$age, graficafemale)
 
-#Gráfico del perfil edad-ingresos para hombres
-ggplot(regFWLBootFemale) + 
-  geom_point(aes(x = regFWLBootFemale$age, y = graficafemale)) +
-  ggtitle("Perfil edad-ingresos para Mujeres") +
-  labs(x = "Edad", y = "Pred. log. de ingreso por hora")
 
 
 Femalemax <-function(data,index){
@@ -407,4 +413,4 @@ ICsupmale <- 42.03397 + 1.96*(0.9934249)
 ICinfmale
 ICsupmale
 
-
+# P5: Predicting earnings ------------------------------------------------
