@@ -228,6 +228,13 @@ est_boot <- function(reg1, index,
 bootstatistics <- boot(reg1, statistic = est_boot, R = 1000)
 bootstatistics
 
+# Para b0
+ICinfb0<- 49.12867 - 1.96*(1.121325)
+ICsupb0 <- 49.12867 + 1.96*(1.121325)
+
+ICinfb0
+ICsupb0
+
 #Cálculo de la edad pico
 edadpico <- b1/(-2*b2)
 edadpico
