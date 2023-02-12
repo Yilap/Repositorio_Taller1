@@ -58,10 +58,10 @@ class(GEIH$relab)
 # En primer lugar, se estiman los años de educación dependiendo del máximo nivel 
 # alcanzado
 GEIH$añoseduc <- ifelse(GEIH$educ == 3, 5, 
-                      ifelse(GEIH$educ == 4, 9, 
-                             ifelse(GEIH$educ == 5, 11, 
-                                    ifelse(GEIH$educ == 6, 16, 
-                                           ifelse(GEIH$educ == 9, 0, 0)))))
+                        ifelse(GEIH$educ == 4, 9, 
+                               ifelse(GEIH$educ == 5, 11, 
+                                      ifelse(GEIH$educ == 6, 16, 
+                                             ifelse(GEIH$educ == 9, 0, 0)))))
 
 
 # Se aplica la fórmula de experiencia potencial, Los valores negativos se aproximan a 0 experiencia y
@@ -229,11 +229,25 @@ bootstatistics <- boot(reg1, statistic = est_boot, R = 1000)
 bootstatistics
 
 # Para b0
-ICinfb0<- 49.12867 - 1.96*(1.121325)
-ICsupb0 <- 49.12867 + 1.96*(1.121325)
+ICinfb0<- 7.8060988293 - 1.96*(6.072904e-02)
+ICsupb0 <- 7.8060988293 + 1.96*(6.072904e-02)
 
 ICinfb0
 ICsupb0
+
+# Para b1
+ICinfb1<- 0.0427107403 - 1.96*(3.216626e-03)
+ICsupb1 <- 0.0427107403 + 1.96*(3.216626e-03)
+
+ICinfb1
+ICsupb1
+
+# Para b2
+ICinfb2<- -0.0004603549 - 1.96*(3.921086e-05)
+ICsupb2 <- -0.0004603549 + 1.96*(3.921086e-05)
+
+ICinfb2
+ICsupb2
 
 #Cálculo de la edad pico
 edadpico <- b1/(-2*b2)
@@ -318,7 +332,7 @@ set.seed(12345)
 regFWLBoot <- subset (GEIHSO, select = c("lningresoh","sex", "age2", "age","educ","experp","relab","estrato1"))
 
 FWLFun <-function(data,index){
-
+  
   regFWLBoot <- subset (GEIHSO, select = c("lningresoh","sex", "age2", "age","educ","experp","relab","estrato1"))
   data<-data %>% mutate(SexResidF=lm(sex~ age + age2 + educ + experp + relab + estrato1 ,data)$residuals) #Residuals of sex~controls 
   data<-data %>% mutate(lnwageResidF=lm(lningresoh ~ age2 + age + educ + experp + relab + estrato1 ,data)$residuals) #Residuals of lnwage~controls 
@@ -334,6 +348,8 @@ databoot
 
 set.seed(12345)
 regFWLBoot <- subset (GEIHSO, select = c("lningresoh","sex", "age2", "age"))
+
+# Para el caso de los hombres:
 regFWLBootMale <- regFWLBoot[regFWLBoot$sex == 1, ]
 regprueba <- lm(lningresoh ~ age + age2, data = regFWLBootMale)
 stargazer(regprueba,type="text")
@@ -346,7 +362,7 @@ plot(regFWLBootMale$age, graficamale)
 
 
 Malemax <-function(data,index){
-    coefs <- (lm(lningresoh ~ age + age2, data = data, subset = index))$coefficients  # reg lnwage residual on sex residuals
+  coefs <- (lm(lningresoh ~ age + age2, data = data, subset = index))$coefficients  # reg lnwage residual on sex residuals
   b1<-coefs[2]
   b2<-coefs[3] 
   Agemax <- (-b1)/(2*b2)
@@ -396,5 +412,7 @@ ICsupmale <- 42.03397 + 1.96*(0.9934249)
 
 ICinfmale
 ICsupmale
+
+# P5: Predicting earnings -------------------------------------------------
 
 
