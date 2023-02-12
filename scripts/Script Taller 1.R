@@ -10,16 +10,13 @@
 rm(list = ls()) 
 
 #install.packages("pacman")
-#install.packages("MASA")
-
-
 require("pacman")
 p_load("tidyverse","rvest","rio","skimr","caret","ggplot2","stargazer","boot", "sandwich", "ggplot2","MASA", "boot")
 
 # Importing Dataset (Webscrapping)-------------------------------------------------------
 
-# Creamos tabla a partir de la base de datos en la wrb de GEIH, para esto hacemos un ciclo for
-#para leer todos los data chunks de la página web
+# Importamos la base datos haciendo webscrapping, para esto hacemos un loop
+# para leer todos los data chunks de la página web
 
 df_list <- list()
 
@@ -30,7 +27,7 @@ for (i in 1:10) {
   df_list[[i]] <- df_i
 }
 
-GEIH <- do.call(rbind, df_list) ## compilamos todas las lecturas en una sola data.
+GEIH <- do.call(rbind, df_list) ## Compilamos todas las lecturas en un solo data frame.
 GEIH <-GEIH[,-1] # Eliminamos la primera columna
 
 # Leer los datos y guardarlos como un archivo binario R (rds) usando saveRDS()
@@ -49,7 +46,7 @@ GEIH <- GEIH[GEIH$ocu == 1, ]
 # Se renombran la variable de máx. nivel de eduación para mayor claridad
 GEIH <- rename(GEIH, educ = p6210)
 
-# La variable de educación y ocupación se establece como una categórica
+# La variable de educación y tipo de ocupación se establecen como categóricas
 GEIH$educ <- factor(GEIH$educ)
 class(GEIH$educ)
 
@@ -198,7 +195,7 @@ b1<-betas[2]
 b2<-betas[3]
 
 #Set seed para asegurar replicabilidad
-set.seed(1111)
+set.seed(111)
 R<-1000
 est_reg1<- rep(0,R)
 
@@ -218,7 +215,9 @@ est_reg1[i]<- b1/(-2*b2)
 
 #Histograma
 hist(est_reg1, main = "Edad en la que se max. ln ingreso por hora", xlab = "Edad", col = "gray")
-abline(v = mean(est_reg1), col = "red", lwd = 2)
+abline(v = mean(est_reg1), col = "blue", lwd = 2)
+xlim(44,50)
+axis(side = 1, at = seq(44,50, by = 1))
 
 summary(est_reg1)
 
@@ -240,7 +239,7 @@ keep_vars <- c("GEIHSO")
 all_vars <- ls()
 rm(list = setdiff(all_vars, keep_vars))
 
-#saveRDS(GEIHSO, file = "GEIH.rds")
+saveRDS(GEIHSO, file = "GEIH.rds")
 rm(list = ls()) 
 GEIHSO<-readRDS("GEIH.Rds")
 
@@ -256,7 +255,6 @@ reg_lin <- lm(lningresoh ~ sex, data = GEIHSO)
 # Ver el resultado de la regresión lineal
 summary(reg_lin)
 stargazer(reg_lin,type="text")
-
 
 # Regresión con errores robustos
 reg <- lm(lningresoh ~ sex, data = GEIHSO)
