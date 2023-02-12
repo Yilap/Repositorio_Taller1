@@ -348,6 +348,8 @@ databoot
 
 set.seed(12345)
 regFWLBoot <- subset (GEIHSO, select = c("lningresoh","sex", "age2", "age"))
+
+# Para el caso de los hombres:
 regFWLBootMale <- regFWLBoot[regFWLBoot$sex == 1, ]
 regprueba <- lm(lningresoh ~ age + age2, data = regFWLBootMale)
 stargazer(regprueba,type="text")
@@ -410,7 +412,6 @@ ICsupmale <- 42.03397 + 1.96*(0.9934249)
 
 ICinfmale
 ICsupmale
-
 
 # P5: Predicting earnings -------------------------------------------------
 
