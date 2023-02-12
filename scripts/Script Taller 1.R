@@ -14,7 +14,7 @@ rm(list = ls())
 
 
 require("pacman")
-p_load("tidyverse","rvest","rio","skimr","caret","ggplot2","stargazer","boot", "sandwich", "ggplot2","MASA", "boot")
+p_load("tidyverse","rvest","rio","skimr","caret","ggplot2","stargazer","boot", "sandwich", "ggplot2", "boot")
 
 # Importing Dataset (Webscrapping)-------------------------------------------------------
 
@@ -240,7 +240,7 @@ keep_vars <- c("GEIHSO")
 all_vars <- ls()
 rm(list = setdiff(all_vars, keep_vars))
 
-#saveRDS(GEIHSO, file = "GEIH.rds")
+saveRDS(GEIHSO, file = "GEIH.rds")
 rm(list = ls()) 
 GEIHSO<-readRDS("GEIH.Rds")
 
@@ -268,6 +268,8 @@ confint_lower <- coef(reg) - qt(0.975, df.residual(reg)) * se_coef
 confint_upper <- coef(reg) + qt(0.975, df.residual(reg)) * se_coef
 cbind(coef = coef(reg), se_coef, t_value, p_value, confint_lower, confint_upper)
 
+
+reg2$sex <- factor(reg2$sex)
 #la descarté porque es dicótoma y no dice mucho, igual ahí dejo el código
 ggplot(reg2, aes(x = sex, y = lningresoh)) + 
   geom_point() + 
@@ -298,6 +300,7 @@ reg2control<-reg2control %>% mutate(lnwageResidF=lm(lningresoh ~ age2 + age + ed
 regFWL2<-lm(lnwageResidF~SexResidF,reg2control)
 stargazer(regFWL,regFWLSex,regFWL2,type="text",digits=7) # with stargazer we can visualize the coefficients next to each other
 
+
 sum(resid(regFWL)^2)
 sum(resid(regFWLSex)^2)
 sum(resid(regFWL2)^2)
@@ -311,6 +314,7 @@ set.seed(12345)
 
 regFWLBoot <- subset (GEIHSO, select = c("lningresoh","sex", "age2", "age","educ","experp","relab","estrato1"))
 
+
 FWLFun <-function(data,index){
 
   regFWLBoot <- subset (GEIHSO, select = c("lningresoh","sex", "age2", "age","educ","experp","relab","estrato1"))
@@ -321,6 +325,7 @@ FWLFun <-function(data,index){
 }
 
 FWLFun (regFWLBoot,1:nrow(regFWLBoot)) # probamos la función
+
 databoot <- boot(regFWLBoot, FWLFun, R = 1000) # ejecutamos el Bootstrap
 databoot
 
@@ -337,6 +342,11 @@ coefregmale <- lm(lningresoh ~ age + age2, data = regFWLBootMale)$coefficients
 graficamale <- coefregmale[1]+coefregmale[2]*regFWLBootMale$age+coefregmale[3]*regFWLBootMale$age2
 plot(regFWLBootMale$age, graficamale)
 
+#Gráfico del perfil edad-ingresos para hombres
+ggplot(regFWLBootMale) + 
+  geom_point(aes(x = regFWLBootMale$age, y = graficamale)) +
+  ggtitle("Perfil edad-ingresos para hombres") +
+  labs(x = "Edad", y = "Pred. log. de ingreso por hora")
 
 
 Malemax <-function(data,index){
@@ -351,6 +361,7 @@ Malemax <-function(data,index){
 Malemax (regFWLBootMale,1:nrow(regFWLBootMale)) # probamos la función
 databootmale <- boot(regFWLBootMale, Malemax, R = 1000) # ejecutamos el Bootstrap
 databootmale
+
 
 ICinfmale <- 49.12867 - 1.96*(1.121325)
 ICsupmale <- 49.12867 + 1.96*(1.121325)
@@ -370,6 +381,11 @@ coefregfemale <- lm(lningresoh ~ age + age2, data = regFWLBootFemale)$coefficien
 graficafemale <- coefregfemale[1]+coefregfemale[2]*regFWLBootFemale$age+coefregfemale[3]*regFWLBootFemale$age2
 plot(regFWLBootFemale$age, graficafemale)
 
+#Gráfico del perfil edad-ingresos para hombres
+ggplot(regFWLBootFemale) + 
+  geom_point(aes(x = regFWLBootFemale$age, y = graficafemale)) +
+  ggtitle("Perfil edad-ingresos para Mujeres") +
+  labs(x = "Edad", y = "Pred. log. de ingreso por hora")
 
 
 Femalemax <-function(data,index){
