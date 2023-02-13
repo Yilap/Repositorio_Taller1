@@ -379,7 +379,7 @@ stargazer(regprueba,type="text")
 
 coefregmale <- lm(lningresoh ~ age + age2, data = regFWLBootMale)$coefficients
 graficamale <- coefregmale[1]+coefregmale[2]*regFWLBootMale$age+coefregmale[3]*regFWLBootMale$age2
-plot(regFWLBootMale$age, graficamale, xlim = c(18, max(regFWLBootMale$age)))
+plot(regFWLBootMale$age, graficamale, xlab="Edad", ylab="ln(salario)", xlim = c(18, max(regFWLBootMale$age)))
 
 
 Malemax <-function(data,index){
@@ -411,7 +411,7 @@ stargazer(regprueba,type="text")
 
 coefregfemale <- lm(lningresoh ~ age + age2, data = regFWLBootFemale)$coefficients
 graficafemale <- coefregfemale[1]+coefregfemale[2]*regFWLBootFemale$age+coefregfemale[3]*regFWLBootFemale$age2
-plot(regFWLBootFemale$age, graficafemale)
+plot(regFWLBootFemale$age, graficafemale, xlab="Edad", ylab="ln(salario)", xlim = c(18, max(regFWLBootMale$age)))
 
 
 
