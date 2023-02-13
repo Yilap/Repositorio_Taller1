@@ -344,7 +344,7 @@ sum(resid(regFWL)^2)
 sum(resid(regFWLSex)^2)
 sum(resid(regFWL2)^2)
 
-sqrt(diag(vcov(regFWL2))*(15659/15653))[2]
+sqrt(diag(vcov(regFWL2))*(15659/15639))[2]
 sqrt(diag(vcov(regFWL)))[2]
 
 # Regresión usando FWL + Bootstrap (estimates + SE)
@@ -379,8 +379,7 @@ stargazer(regprueba,type="text")
 
 coefregmale <- lm(lningresoh ~ age + age2, data = regFWLBootMale)$coefficients
 graficamale <- coefregmale[1]+coefregmale[2]*regFWLBootMale$age+coefregmale[3]*regFWLBootMale$age2
-plot(regFWLBootMale$age, graficamale)
-
+plot(regFWLBootMale$age, graficamale, xlim = c(18, max(regFWLBootMale$age)))
 
 
 Malemax <-function(data,index){
