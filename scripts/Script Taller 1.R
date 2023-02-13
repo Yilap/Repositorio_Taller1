@@ -586,15 +586,14 @@ View(ordenMSE)
 # De todos los modelos presentados, los que tienen un menor MSE son los modelos nuevos 1 y 3. Es decir, en donde se tiene un mejor performance en la predicción. 
 # Sin embargo, los MSE son muy similares a los de los demás modelos, especialmente el modelo previo 3 a y los nuevos 2, 4 y 5. 
 
-# Incluir lo de apalancamiento
-# Calculate the leverage for each observation
+# Apalancamiento
 install.packages("caret")
 
 alpha <- c()
 u <- c()
 h <- c()
 
-#El modelo con menor MSE es el siguiente y se calcula para el test:
+#El modelo con menor error cuadrático medio se calcula nuevamente
 bestmodel<-lm(lningresoh ~ sex + age + age2 + educ + lnexperp + relab + estrato1, data = test_data)
 
 #Calcular el leverage para el modelo con el menor MSE
@@ -606,8 +605,7 @@ for (j in 1:nrow(test_data)) {
   alphass <- c(alphass, alpha)
 } 
 
-#Se determinó que mayor a 1 o menor que -1, podrían ser leverages altos
-#Se calculará si el leverage es importante para las observaciones en este modelo
+#Considerando que es posible que un leverage mayor a 1 o menor que -1 se podría considerar alto, se calcula lo siguiente:
 alphass<-data.frame(alphass)
 leverage<-alphass[alphass$alphass>=1|alphass<=-1,]
 leverage<-data.frame(leverage)
@@ -617,9 +615,12 @@ xlabel_alpha<-data.frame(xlabel_alpha)
 alphass<-cbind(alphass, xlabel_alpha)
 view(lvpercentage)
 
-ggplot(data=alphass, aes(x =xlabel_alpha, y = alphass, group=1)) + 
-  geom_point()
+# Se grafican los resultados obtenidos
+ggplot(data=alphass, aes(x = xlabel_alpha, y = alphass, group=1)) + 
+  geom_point() + 
+  ggtitle("Leverage para el modelo con mejor métrica de MSE")
 
+#Se consultan los valores máximos y mínimos
 max(alphass$alphass)
 min(alphass$alphass)
 
