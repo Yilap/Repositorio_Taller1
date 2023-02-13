@@ -437,4 +437,227 @@ ICsupmale
 
 # P5: Predicting earnings -------------------------------------------------
 
+#Borramos df para preparar data para el punto 5
+rm(list = ls()) 
+GEIHSO<-readRDS("GEIH.Rds")
+
+GEIHSO$relab <- factor(GEIHSO$relab)
+GEIHSO$educ <- factor(GEIHSO$educ)
+GEIHSO$estrato1 <- factor(GEIHSO$estrato1)
+
+# Se divide la muestra 70% 30%, se incluye la semilla permite reproducibilidad
+set.seed(1111) 
+
+# Calcular el número de filas en la base de datos
+n_rows <- nrow(GEIHSO)
+
+# Calcular el tamaño de los conjuntos de entrenamiento y prueba
+train_size <- round(n_rows * 0.7)
+test_size <- n_rows - train_size
+
+# Crear un vector con números aleatorios para seleccionar las filas para el conjunto de entrenamiento y prueba
+split_indices <- sample(1:n_rows, size = n_rows, replace = FALSE)
+
+# Dividir la base de datos en conjunto de entrenamiento y prueba
+train_data <- GEIHSO[split_indices[1:train_size], ]
+test_data <- GEIHSO[split_indices[(train_size + 1):n_rows], ]
+
+# Se verifican las dimensiones de cada dataframe
+dim(train_data)
+dim(test_data)
+
+# Se vuelven a estimar los modelos planteados a lo largo del Problem Set, además de uno incial
+# con solo la constante para usar como ejercicio base 
+
+# Modelo base: Comenzamos utilizando un modelo simple sin covariables, sólo una constante.
+mp0<- lm(lningresoh ~ 1, data = train_data)
+summary(mp0)
+coef(mp0)
+paste("Coef:", mean(train_data$lningresoh))
+test_data$mp0<-predict(mp0,newdata = test_data)
+
+#Se calcula el MSE para el modelo base (es decir, su rendimiento en la predicción)
+MSE_mp0<-with(test_data,mean((lningresoh-mp0)^2))
+
+# Modelo previo 1
+mp1<- lm(lningresoh ~ age + age2, data = train_data)
+summary(mp1)
+coef(mp1)
+paste("Coef:", mean(train_data$lningresoh))
+test_data$mp1<-predict(mp1,newdata = test_data)
+
+#Se calcula el MSE para el modelo previo 1
+MSE_mp1<-with(test_data,mean((lningresoh-mp1)^2))
+
+# Modelo previo 2
+mp2<- lm(lningresoh ~ sex, data = train_data)
+summary(mp2)
+coef(mp2)
+paste("Coef:", mean(train_data$lningresoh))
+test_data$mp2<-predict(mp2,newdata = test_data)
+
+#Se calcula el MSE para el modelo previo 2
+MSE_mp2<-with(test_data,mean((lningresoh-mp2)^2))
+
+# Modelo previo 3
+mp3<- lm(lningresoh ~ sex + age + age2 + educ + experp + relab + estrato1, data = train_data)
+summary(mp3)
+coef(mp3)
+paste("Coef:", mean(train_data$lningresoh))
+test_data$mp3<-predict(mp3,newdata = test_data)
+
+#Se calcula el MSE para el modelo previo 3
+MSE_mp3<-with(test_data,mean((lningresoh-mp3)^2))
+
+#Se presentan las estimaciones de los modelos
+stargazer(mp0,mp1,mp2,mp3, summary = TRUE, type = "text")
+
+
+#Se plantean 5 modelos nuevos con especificaciones adicionales que incluya no-linealidades y complejidades respecto a los anteriores
+
+# Modelo nuevo 1 (logaritmo en var experiencia potencial)
+test_data$lnexperp <- log(test_data$experp)
+train_data$lnexperp <- log(train_data$experp)
+
+mn1<- lm(lningresoh ~ sex + age + age2 + educ + lnexperp + relab + estrato1, data = train_data)
+coef(mn1)
+paste("Coef:", mean(train_data$lningresoh))
+test_data$mn1<-predict(mn1,newdata = test_data)
+
+#Se calcula el MSE para el modelo nuevo 1
+MSE_mn1<-with(test_data,mean((lningresoh-mn1)^2))
+
+# Modelo nuevo 2 (Interacción entre estrato y género)
+mn2<- lm(lningresoh ~ sex + age + age2 + educ + experp + relab + estrato1 + sex*estrato1, data = train_data)
+coef(mn2)
+paste("Coef:", mean(train_data$lningresoh))
+test_data$mn2<-predict(mn2,newdata = test_data)
+
+#Se calcula el MSE para el modelo nuevo 2
+MSE_mn2<-with(test_data,mean((lningresoh-mn2)^2))
+
+# Modelo nuevo 3 (Quitando edad^2 y poniendo experiencia^2)
+mn3<- lm(lningresoh ~ sex + age + educ + experp + I(experp^2) + relab + estrato1, data = train_data)
+coef(mn3)
+paste("Coef:", mean(train_data$lningresoh))
+test_data$mn3<-predict(mn3,newdata = test_data)
+
+#Se calcula el MSE para el modelo nuevo 3
+MSE_mn3<-with(test_data,mean((lningresoh-mn3)^2))
+
+# Modelo nuevo 4 (Interacción entre edad y género)
+mn4<- lm(lningresoh ~ sex + age*sex + age + age2 + educ + experp + relab + estrato1, data = train_data)
+coef(mn4)
+paste("Coef:", mean(train_data$lningresoh))
+test_data$mn4<-predict(mn4,newdata = test_data)
+
+#Se calcula el MSE para el modelo nuevo 4
+MSE_mn4<-with(test_data,mean((lningresoh-mn4)^2))
+
+# Modelo nuevo 5 (Interacción entre edad y género, quitando edad^2)
+mn5<- lm(lningresoh ~ sex + age*sex + age + educ + experp + relab + estrato1, data = train_data)
+coef(mn5)
+paste("Coef:", mean(train_data$lningresoh))
+test_data$mn5<-predict(mn5,newdata = test_data)
+
+#Se calcula el MSE para el modelo nuevo 5
+MSE_mn5<-with(test_data,mean((lningresoh-mn5)^2))
+
+#Se presentan las estimaciones de los modelos nuevos
+stargazer(mn1,mn2,mn3,mn4,mn5, summary = TRUE, type = "text")
+
+#Los resultados de los rendimientos de preducción para los modelos previos y nuevos se condensan a continuación:
+MSE_table<-c(MSE_mp0, MSE_mp1, MSE_mp2, MSE_mp3, MSE_mn1,MSE_mn2,MSE_mn3,MSE_mn4,MSE_mn5)
+x_label<-c('Modelo 0','Modelo 1', 'Modelo 2', 'Modelo 3', 'Modelo nuevo 1','Modelo nuevo 2','Modelo nuevo 3','Modelo nuevo 4', 'Modelo nuevo 5')
+MSEtabla<-data.frame(x_label,MSE_table)
+
+#Se grafican los MSE de cada uno de los modelos predicos para poder compararlos:
+ggplot(data=MSEtabla, aes(x = x_label, y = MSE_table, group=1)) + 
+  geom_line() +  
+  geom_point() +
+  ggtitle("MSE de los modelos especificados") +
+  ylab("MSE") +
+  xlab ("Número de modelo")
+
+#Para tener idea de cuáles modelos tienen el MSE más bajo
+ordenMSE <- MSEtabla[order(MSEtabla$MSE_table), ]
+View(ordenMSE)
+
+# De todos los modelos presentados, los que tienen un menor MSE son los modelos nuevos 1 y 3. Es decir, en donde se tiene un mejor performance en la predicción. 
+# Sin embargo, los MSE son muy similares a los de los demás modelos, especialmente el modelo previo 3 a y los nuevos 2, 4 y 5. 
+
+# Incluir lo de apalancamiento
+# Calculate the leverage for each observation
+install.packages("caret")
+
+alpha <- c()
+u <- c()
+h <- c()
+
+#El modelo con menor MSE es el siguiente y se calcula para el test:
+bestmodel<-lm(lningresoh ~ sex + age + age2 + educ + lnexperp + relab + estrato1, data = test_data)
+
+#Calcular el leverage para el modelo con el menor MSE
+alphass <- c()
+for (j in 1:nrow(test_data)) {
+  u_j <- bestmodel$residual[j]
+  h_j <- lm.influence(bestmodel)$hat[j]
+  alpha <- u_j/(1-h_j)
+  alphass <- c(alphass, alpha)
+} 
+
+#Se determinó que mayor a 1 o menor que -1, podrían ser leverages altos
+#Se calculará si el leverage es importante para las observaciones en este modelo
+alphass<-data.frame(alphass)
+leverage<-alphass[alphass$alphass>=1|alphass<=-1,]
+leverage<-data.frame(leverage)
+lvpercentage<-((nrow(leverage)/nrow(alphass)*100))
+xlabel_alpha<-1:nrow(test_data)
+xlabel_alpha<-data.frame(xlabel_alpha)
+alphass<-cbind(alphass, xlabel_alpha)
+view(lvpercentage)
+
+ggplot(data=alphass, aes(x =xlabel_alpha, y = alphass, group=1)) + 
+  geom_point()
+
+max(alphass$alphass)
+min(alphass$alphass)
+
+
+# LOOCV para el modelo con mejor performance predictivo, es decir, el mn1
+GEIHSO$lnexperp <- log(GEIHSO$experp)
+
+modelLOOCV1 <- train(lningresoh ~ sex + age + age2 + educ + lnexperp + relab + estrato1, 
+                     data = GEIHSO,
+                     method = "lm",
+                     trControl = trainControl(method = "LOOCV"))
+
+# Resultados 
+modelLOOCV1
+
+RMSE_modelLOOCV1<-modelLOOCV1$results
+RMSE_modelLOOCV1<-RMSE_modelLOOCV1$RMSE
+RMSE_modelLOOCV1<-mean(RMSE_modelLOOCV1)
+
+view(RMSE_modelLOOCV1)
+# 0.6448116
+
+# LOOCV para el segundo modelo con mejor performance predictivo, es decir, el mn3
+
+modelLOOCV2 <- train(lningresoh ~ sex + age + educ + experp + I(experp^2) + relab + estrato1, 
+                     data = GEIHSO,
+                     method = "lm",
+                     trControl = trainControl(method = "LOOCV"))
+
+# Resultados 
+modelLOOCV2
+
+RMSE_modelLOOCV2<-modelLOOCV2$results
+RMSE_modelLOOCV2<-RMSE_modelLOOCV2$RMSE
+RMSE_modelLOOCV2<-mean(RMSE_modelLOOCV2)
+
+view(RMSE_modelLOOCV2)
+# 0.6469727
+
+
 
