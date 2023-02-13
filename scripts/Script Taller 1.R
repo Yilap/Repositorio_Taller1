@@ -11,7 +11,7 @@ rm(list = ls())
 
 #install.packages("pacman")
 require("pacman")
-p_load("tidyverse","rvest","rio","skimr","caret","ggplot2","stargazer","boot", "sandwich", "ggplot2","MASA", "boot")
+p_load("tidyverse","rvest","rio","skimr","caret","ggplot2","stargazer","boot", "sandwich", "ggplot2", "boot")
 
 # Importing Dataset (Webscrapping)-------------------------------------------------------
 
@@ -266,6 +266,17 @@ GEIHSO<-readRDS("GEIH.Rds")
 # P4.The gender earnings GAP -------------------------------------------------
 
 # 4.a Wage & Gender Relationship
+
+# La variable de educación y tipo de ocupación se establecen como categóricas
+GEIHSO$educ <- factor(GEIHSO$educ)
+class(GEIHSO$educ)
+
+GEIHSO$relab <- factor(GEIHSO$relab)
+class(GEIHSO$relab)
+
+GEIHSO$estrato1 <- factor(GEIHSO$estrato1)
+class(GEIHSO$relab)
+
 
 # Se seleccionan las variables a usar
 reg2 <- subset (GEIHSO, select = c("lningresoh","sex"))
