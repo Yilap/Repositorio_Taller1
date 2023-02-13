@@ -570,7 +570,7 @@ MSE_table<-c(MSE_mp0, MSE_mp1, MSE_mp2, MSE_mp3, MSE_mn1,MSE_mn2,MSE_mn3,MSE_mn4
 x_label<-c('Modelo 0','Modelo 1', 'Modelo 2', 'Modelo 3', 'Modelo nuevo 1','Modelo nuevo 2','Modelo nuevo 3','Modelo nuevo 4', 'Modelo nuevo 5')
 MSEtabla<-data.frame(x_label,MSE_table)
 
-#Se grafican los MSE de cada uno de los modelos predicos para poder compararlos:
+#Se grafican los MSE de cada uno de los modelos predicos para poder compararlos
 ggplot(data=MSEtabla, aes(x = x_label, y = MSE_table, group=1)) + 
   geom_line() +  
   geom_point() +
@@ -604,7 +604,7 @@ for (j in 1:nrow(test_data)) {
   alphass <- c(alphass, alpha)
 } 
 
-#Considerando que es posible que un leverage mayor a 1 o menor que -1 se podría considerar alto, se calcula lo siguiente:
+#Teniendo en cuenta que es posible que un leverage mayor a 1 o menor que -1 se podría considerar alto, se calcula lo siguiente:
 alphass<-data.frame(alphass)
 leverage<-alphass[alphass$alphass>=1|alphass<=-1,]
 leverage<-data.frame(leverage)
@@ -643,7 +643,6 @@ view(RMSE_modelLOOCV1)
 # 0.6448116
 
 # LOOCV para el segundo modelo con mejor performance predictivo, es decir, el mn3
-
 modelLOOCV2 <- train(lningresoh ~ sex + age + educ + experp + I(experp^2) + relab + estrato1, 
                      data = GEIHSO,
                      method = "lm",
