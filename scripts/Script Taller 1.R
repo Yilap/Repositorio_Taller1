@@ -310,10 +310,21 @@ ggplot(reg2, aes(x = sex, y = lningresoh)) +
 # Regresión convencional
 
 GEIHSO$age2 <- I(GEIHSO$age^2)
-reg2control <- subset (GEIHSO, select = c("lningresoh","sex", "age2", "age","educ","experp","relab","estrato1"))
+reg2control <- subset (GEIHSO, select = c("lningresoh","sex", "age", "age2","educ","experp","relab","estrato1"))
 reg_lincontrol <- lm(lningresoh ~ ., data = reg2control)
 summary(reg_lincontrol)
 stargazer(reg_lincontrol,type="text")
+
+#prueba de colinealidad VIF para la variable experp: dado que tenemos variables tipo factor, VIF del paquete "car" 
+#no la puede cálcular, lo haremos a "mano"
+
+regVIF <- lm(experp ~ sex + age + age2 + educ + relab + estrato1, data = reg2control)
+residuals <- residuals(regVIF)
+sse <- sum(residuals^2)
+dof <- nrow(regVIF$model) - 2
+variance_estimate <- sse / dof
+VIF <- 1/variance_estimate
+VIF # efectivamente nos dió colinealidad.
 
 # Regresión usando FWL
 
